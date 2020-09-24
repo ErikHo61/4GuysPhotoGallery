@@ -119,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Save a file: path for use with ACTION_VIEW intents
         mostRecentPhoto = image.getAbsolutePath();
+        Log.d("filepath", image.getPath());
         return image;
     }
 
@@ -141,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void showPhoto(String photoPath) {
         try {
+            photoPaths = getPhotos();
             Bitmap imageBitmap = BitmapFactory.decodeFile(photoPath);
             imageView.setImageBitmap(imageBitmap);
             String caption = photoPath.split("_")[2];

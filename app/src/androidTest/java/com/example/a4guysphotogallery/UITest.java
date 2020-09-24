@@ -34,7 +34,6 @@ public class UITest {
         onView(withId(R.id.keySchText)).perform(typeText("This is a Test"), closeSoftKeyboard());
         onView(withId(R.id.keySchBtn)).perform(click());
         onView(withId(R.id.captionText)).check(matches(withText("This is a Test")));
-
     }
 
 }
