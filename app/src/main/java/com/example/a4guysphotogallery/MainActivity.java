@@ -50,10 +50,12 @@ public class MainActivity extends AppCompatActivity {
         String keyword = null;
 
         if (bundle != null) {
-            startDate = bundle.getLong("startDate");
-            endDate = bundle.getLong("endDate");
-            keyword = bundle.getString("keyword");
+            Log.d("bundle","bundle not null");
+            startDate = getIntent().getExtras().getLong("EXTRA_START_DATE");
+            endDate = getIntent().getExtras().getLong("EXTRA_END_DATE");
+            keyword = getIntent().getExtras().getString("EXTRA_KEYWORD");
         }
+
 
         photoPaths = getPhotos(startDate, endDate, keyword);
         if (photoPaths.size() > 0) {
@@ -143,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
             imageView.setImageBitmap(imageBitmap);
             String caption = photoPath.split("_")[2];
             captionText.setText(caption);
+            curIndex = photoPaths.indexOf(photoPath);
         } catch (NullPointerException e) {
             Toast.makeText(this,
                     "Image not found: " + e.getMessage(),
@@ -172,15 +175,35 @@ public class MainActivity extends AppCompatActivity {
                 for (File photo : photos) {
                     String path = photo.getPath();
                     if (!path.contains(".jpg")) continue;
-//                    // filter the params
-//                    boolean containKeyword = keyword != null && path.contains(keyword);
-//                    boolean validLastModified = startDate != null && endDate != null
-//                            && startDate < photo.lastModified() && photo.lastModified() < endDate;
-//
-//                    if (containKeyword && validLastModified) ;
-//                    Log.d(null, "containkeyword" + containKeyword);
-//                    Log.d(null, "validLastModified" + validLastModified);
-                    photoPaths.add(path);
+
+                    // no filters
+                    if (keyword == null && (startDate == null || endDate == null)) {
+                        photoPaths.add(path);
+                        continue;
+                    }
+
+                    // check for three cases:
+                    // keyword has filter but no date filter
+                    // date has filter but no keyword
+                    // both filters are on
+
+                    // filter the params
+                    boolean containKeyword = keyword != null && path.contains(keyword);
+
+
+                    String[] args = photo.getName().split("_");
+                    for (String s:
+                         args) {
+                        Log.d("args",s);
+                    }
+                    boolean validLastModified = startDate != null && endDate != null
+                            && startDate < Long.parseLong(args[0]) && endDate < Long.parseLong(args[0]);
+
+                    Log.d(null, "containkeyword" + containKeyword);
+                    Log.d(null, "validLastModified" + validLastModified);
+                    if (containKeyword && validLastModified){
+                        photoPaths.add(path);
+                    }
                 }
             }
         }
@@ -198,16 +221,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void captionBtnClick(View view){
+        if(curIndex == -1){
+            Toast.makeText(this,
+                    "Cannot assign caption",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
         editCaption(photoPaths.get(curIndex), captionText.getText().toString());
     }
 
     private void editCaption(String path, String caption){
         String[] attr = path.split("_");
-        File to = new File(attr[0] + "_" + attr[1] + "_" + caption + "_" + attr[3] + ".jpg");
+        File to = new File(attr[0] + "_" + attr[1] + "_" + caption + "_" + attr[3]);
         File from =  new File(path);
         from.renameTo(to);
         photoPaths = getPhotos();
-        showPhoto(photoPaths.get(curIndex));
+        showPhoto(photoPaths.get(photoPaths.indexOf(to.getPath())));
     }
 
     /**

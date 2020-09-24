@@ -22,16 +22,30 @@ public class SearchActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MainActivity.class);
 
         EditText startDateInput = (EditText) findViewById(R.id.dateSchText);
-        String startDate = startDateInput.getText().toString();
+        Long startDate = null;
+        Log.d("startdateinput", "|" + startDateInput.getText().toString() + "|" + startDateInput.getText().toString().equals(""));
+        if (!startDateInput.getText().toString().equals("")){
+            startDate = Long.parseLong(startDateInput.getText().toString().replace("/",""));
+        }
 
         EditText endDateInput = (EditText) findViewById(R.id.dateSchText2);
-        String endDate = startDateInput.getText().toString();
+        Long endDate = null;
+        if (!endDateInput.getText().toString().equals("")) {
+            endDate = Long.parseLong(endDateInput.getText().toString().replace("/",""));
+        }
 
-        Log.d(null, startDate);
+        //Log.d(null, startDate);
 
         EditText keywordInput = (EditText) findViewById(R.id.keySchText);
         String keyword = keywordInput.getText().toString();
 
+        Bundle extras = new Bundle();
+        if(startDate!= null)
+            extras.putLong("EXTRA_START_DATE", startDate);
+        if(endDate!= null)
+            extras.putLong("EXTRA_END_DATE", endDate);
+        extras.putString("EXTRA_KEYWORD", keyword);
+        intent.putExtras(extras);
         startActivity(intent);
     }
 
