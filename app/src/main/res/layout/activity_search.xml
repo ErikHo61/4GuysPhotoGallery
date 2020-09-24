@@ -7,6 +7,32 @@
     android:background="@android:color/holo_orange_light"
     tools:context=".SearchActivity">
 
+    <TextView
+        android:id="@+id/endText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:text="End Date"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/dateSchText2"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="End Date" />
+
+    <EditText
+        android:id="@+id/dateSchText2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="64dp"
+        android:ems="10"
+        android:hint="DD/MM/YYYY"
+        android:inputType="date"
+        android:maxLength="10"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dateSchText" />
+
     <EditText
         android:id="@+id/dateSchText"
         android:layout_width="wrap_content"
@@ -14,8 +40,9 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="40dp"
         android:ems="10"
-        android:inputType="textPersonName"
-        android:text="Date"
+        android:hint="DD/MM/YYYY"
+        android:inputType="date"
+        android:maxLength="10"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -24,32 +51,34 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="100dp"
         android:ems="10"
+        android:hint="Keywords"
         android:inputType="textPersonName"
-        android:text="Keywords"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dateSchText" />
+        app:layout_constraintTop_toBottomOf="@+id/dateSchText2" />
 
     <Button
         android:id="@+id/dateSchBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="148dp"
         android:onClick="sendDate"
         android:text="Search"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/dateSchText"
+        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintStart_toEndOf="@+id/dateSchText2"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/keySchBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="100dp"
         android:onClick="sendKeyword"
         android:text="Search"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.48"
         app:layout_constraintStart_toEndOf="@+id/keySchText"
         app:layout_constraintTop_toBottomOf="@+id/dateSchBtn" />
 
@@ -64,4 +93,20 @@
         app:layout_constraintHorizontal_bias="0.86"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/keySchBtn" />
+
+    <TextView
+        android:id="@+id/startText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:text="Start Date"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/dateSchText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Start Date" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
