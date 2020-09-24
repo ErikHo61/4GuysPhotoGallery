@@ -18,10 +18,8 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -58,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
             mostRecentPhoto = "";
         }
         showPhoto(mostRecentPhoto);
-        Log.d(null, "i'm back");
     }
 
     public void sendSearch (View view) {
@@ -159,17 +156,20 @@ public class MainActivity extends AppCompatActivity {
             if (photos != null) {
                 for (File photo : photos) {
                     String path = photo.getPath();
-                    // filter the params
-                    boolean containKeyword = keyword != null && !path.contains(keyword);
-                    boolean validLastModified = startDate != null && endDate != null
-                            && startDate < photo.lastModified() && photo.lastModified() < endDate;
-
-                    if (containKeyword && validLastModified) photoPaths.add(path);
+                    if (!path.contains(".jpg")) continue;
+//                    // filter the params
+//                    boolean containKeyword = keyword != null && path.contains(keyword);
+//                    boolean validLastModified = startDate != null && endDate != null
+//                            && startDate < photo.lastModified() && photo.lastModified() < endDate;
+//
+//                    if (containKeyword && validLastModified) ;
+//                    Log.d(null, "containkeyword" + containKeyword);
+//                    Log.d(null, "validLastModified" + validLastModified);
+                    photoPaths.add(path);
                 }
             }
         }
 
-        Log.d(null, photoPaths.toString());
         return photoPaths;
     }
 
@@ -186,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void getPreviousPhoto(View view) {
         // if there's no previous picture
+        Log.d(null, "" + curIndex);
         if (curIndex <= 0) {
             Toast.makeText(this,
                     "No more pictures",

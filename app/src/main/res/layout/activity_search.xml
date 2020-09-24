@@ -27,7 +27,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="64dp"
         android:ems="10"
-        android:hint="DD/MM/YYYY"
+        android:hint="@string/dateTextHint"
         android:inputType="date"
         android:maxLength="10"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,7 +40,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="40dp"
         android:ems="10"
-        android:hint="DD/MM/YYYY"
+        android:hint="@string/dateTextHint"
         android:inputType="date"
         android:maxLength="10"
         app:layout_constraintStart_toStartOf="parent"
@@ -59,28 +59,16 @@
         app:layout_constraintTop_toBottomOf="@+id/dateSchText2" />
 
     <Button
-        android:id="@+id/dateSchBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="148dp"
-        android:onClick="sendDate"
-        android:text="Search"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.494"
-        app:layout_constraintStart_toEndOf="@+id/dateSchText2"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
         android:id="@+id/keySchBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:onClick="sendKeyword"
+        android:layout_marginTop="292dp"
+        android:onClick="search"
         android:text="Search"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.48"
+        app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toEndOf="@+id/keySchText"
-        app:layout_constraintTop_toBottomOf="@+id/dateSchBtn" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/bckBtn"

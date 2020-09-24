@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">4GuysPhotoGallery</string>
+    <string name="dateTextHint">DD/MM/YYYY</string>
 </resources>
