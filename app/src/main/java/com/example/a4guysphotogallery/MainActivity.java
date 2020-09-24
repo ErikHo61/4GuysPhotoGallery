@@ -13,6 +13,8 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -20,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     String mostRecentPhoto;
     ImageView imageView;
+    EditText captionText;
+    Button captionBtn;
     List<String> photoPaths;
     int curIndex;
 
@@ -35,6 +40,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         imageView = findViewById(R.id.imageView);
+
+        captionText = findViewById(R.id.captionText);
+        captionBtn = findViewById(R.id.captionBtn);
 
         Bundle bundle = getIntent().getExtras();
         Long startDate = null;
@@ -99,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
     public File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = timeStamp + "_";
+        String imageFileName = timeStamp + "_Default Caption_";
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
@@ -133,7 +141,14 @@ public class MainActivity extends AppCompatActivity {
         try {
             Bitmap imageBitmap = BitmapFactory.decodeFile(photoPath);
             imageView.setImageBitmap(imageBitmap);
+            String caption = photoPath.split("_")[2];
+            captionText.setText(caption);
         } catch (NullPointerException e) {
+            Toast.makeText(this,
+                    "Image not found: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
+            Log.e(null, e.toString());
+        } catch (IndexOutOfBoundsException e) {
             Toast.makeText(this,
                     "Image not found: " + e.getMessage(),
                     Toast.LENGTH_LONG).show();
@@ -152,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> photoPaths = new ArrayList<>();
         if (storageDir != null ) {
             File[] photos = storageDir.listFiles();
-
+            Arrays.sort(photos);
             if (photos != null) {
                 for (File photo : photos) {
                     String path = photo.getPath();
@@ -169,7 +184,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-
+        Toast.makeText(this,
+                photoPaths.size() + " photos loaded",
+                Toast.LENGTH_SHORT).show();
         return photoPaths;
     }
 
@@ -178,6 +195,19 @@ public class MainActivity extends AppCompatActivity {
      */
     private List<String> getPhotos() {
         return getPhotos(null, null, null);
+    }
+
+    public void captionBtnClick(View view){
+        editCaption(photoPaths.get(curIndex), captionText.getText().toString());
+    }
+
+    private void editCaption(String path, String caption){
+        String[] attr = path.split("_");
+        File to = new File(attr[0] + "_" + attr[1] + "_" + caption + "_" + attr[3] + ".jpg");
+        File from =  new File(path);
+        from.renameTo(to);
+        photoPaths = getPhotos();
+        showPhoto(photoPaths.get(curIndex));
     }
 
     /**
