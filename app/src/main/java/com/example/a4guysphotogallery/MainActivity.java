@@ -172,14 +172,25 @@ public class MainActivity extends AppCompatActivity {
                 for (File photo : photos) {
                     String path = photo.getPath();
                     if (!path.contains(".jpg")) continue;
-//                    // filter the params
-//                    boolean containKeyword = keyword != null && path.contains(keyword);
-//                    boolean validLastModified = startDate != null && endDate != null
-//                            && startDate < photo.lastModified() && photo.lastModified() < endDate;
-//
-//                    if (containKeyword && validLastModified) ;
-//                    Log.d(null, "containkeyword" + containKeyword);
-//                    Log.d(null, "validLastModified" + validLastModified);
+
+                    // no filters
+                    if (keyword == null && (startDate == null || endDate == null)) {
+                        photoPaths.add(path);
+                        continue;
+                    }
+
+                    // check for three cases:
+                    // keyword has filter but no date filter
+                    // date has filter but no keyword
+                    // both filters are on
+
+                    // filter the params
+                    boolean containKeyword = keyword != null && path.contains(keyword);
+                    boolean validLastModified = startDate != null && endDate != null
+                            && startDate < photo.lastModified() && photo.lastModified() < endDate;
+
+                    Log.d(null, "containkeyword" + containKeyword);
+                    Log.d(null, "validLastModified" + validLastModified);
                     photoPaths.add(path);
                 }
             }
