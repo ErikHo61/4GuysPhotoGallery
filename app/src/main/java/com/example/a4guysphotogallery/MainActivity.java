@@ -45,15 +45,19 @@ public class MainActivity extends AppCompatActivity {
         captionBtn = findViewById(R.id.captionBtn);
 
         Bundle bundle = getIntent().getExtras();
-        Long startDate = null;
-        Long endDate = null;
-        String keyword = null;
+        long startDate = 0L;
+        long endDate = 0L;
+        String keyword = "";
 
         if (bundle != null) {
-            startDate = bundle.getLong("startDate");
-            endDate = bundle.getLong("endDate");
-            keyword = bundle.getString("keyword");
+            startDate = bundle.getLong("startDate", 0);
+            endDate = bundle.getLong("endDate", 0);
+            keyword = bundle.getString("keyword", "");
         }
+
+        Log.d(null, "startDate: " + startDate);
+        Log.d(null, "endDate: " + endDate);
+        Log.d(null, "keyword: " + keyword);
 
         photoPaths = getPhotos(startDate, endDate, keyword);
         if (photoPaths.size() > 0) {
