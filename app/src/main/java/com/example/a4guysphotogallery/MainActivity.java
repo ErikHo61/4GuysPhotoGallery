@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -274,4 +275,19 @@ public class MainActivity extends AppCompatActivity {
         showPhoto(photoPath);
     }
 
+    /**
+     * Share the current photo that's being displayed to Twitter.
+     * @param view
+     */
+    public void sharePhoto(View view) {
+        // retrieve the current photo
+        ImageView curPhotoView = findViewById(R.id.imageView);
+        Bitmap photo = ((BitmapDrawable) curPhotoView.getDrawable()).getBitmap();
+
+        // set up intent
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("image/jpeg");
+        intent.putExtra("image", photo);
+
+    }
 }
