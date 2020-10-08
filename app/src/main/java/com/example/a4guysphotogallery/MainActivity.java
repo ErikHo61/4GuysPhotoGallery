@@ -20,7 +20,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -284,10 +286,14 @@ public class MainActivity extends AppCompatActivity {
         ImageView curPhotoView = findViewById(R.id.imageView);
         Bitmap photo = ((BitmapDrawable) curPhotoView.getDrawable()).getBitmap();
 
+        Uri photoUri = Uri.parse(photoPaths.get(curIndex));
+
         // set up intent
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("image/jpeg");
-        intent.putExtra("image", photo);
+        intent.putExtra(Intent.EXTRA_STREAM, photoUri);
+        //start chooser
+        startActivity(Intent.createChooser(intent, "Share image using"));
 
     }
 }
