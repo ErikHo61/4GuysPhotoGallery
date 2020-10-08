@@ -13,7 +13,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
-import android.media.ExifInterface;
+import androidx.exifinterface.media.ExifInterface;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -30,6 +31,8 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -184,12 +187,15 @@ public class MainActivity extends AppCompatActivity {
                             // Got last known location. In some rare situations this can be null.
                             if (location != null) {
                                 Log.d("lastloc", location.getLatitude() + ", " + location.getLongitude());
-                                final ExifInterface exif;
+
+                                ExifInterface exif;
                                 try {
                                     exif = new ExifInterface(mostRecentPhoto);
-                                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, Double.toString(location.getLatitude()));
+                                    Log.d("exif status", exif.TAG_FILE_SOURCE);
+                                    exif.setGpsInfo(location);
+                                    //exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, Double.toString(location.getLatitude()));
 
-                                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, Double.toString(location.getLongitude()));
+                                    //exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, Double.toString(location.getLongitude()));
 
                                     try {
                                         exif.saveAttributes();
@@ -206,11 +212,15 @@ public class MainActivity extends AppCompatActivity {
 
                                         String lng = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
 
-                                        Log.d("exiftest", "lat: " + lat + ", lng: " + lng);
+                                        Log.d("exiftestfail", "lat: " + lat + ", lng: " + lng);
                                     }
 
                                 } catch (IOException e) {
                                     e.printStackTrace();
+                                    Log.d("ioexception", "except io");
+                                } catch (NullPointerException e) {
+                                    e.printStackTrace();
+                                    Log.d("nullexception", "except null");
                                 }
 
                             } else {
