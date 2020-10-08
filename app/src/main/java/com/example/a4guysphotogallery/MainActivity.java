@@ -13,11 +13,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
+
 import androidx.exifinterface.media.ExifInterface;
+
 import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -27,7 +30,12 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationAvailability;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
@@ -50,7 +58,9 @@ public class MainActivity extends AppCompatActivity {
     int curIndex;
 
     private FusedLocationProviderClient fusedLocationClient;
+    LocationCallback locationCallback;
 
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +71,25 @@ public class MainActivity extends AppCompatActivity {
         captionBtn = findViewById(R.id.captionBtn);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationClient.getLocationAvailability()
+                .addOnSuccessListener(this, new OnSuccessListener<LocationAvailability>() {
+                    @Override
+                    public void onSuccess(LocationAvailability locationAvailability) {
+                        Log.d("locAvail", "Location is available");
+                    }
+                });
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    // Update UI with location data
+                    // ...
+                }
+            }
+        };
 
         Bundle bundle = getIntent().getExtras();
         Long startDate = null;
@@ -85,6 +114,42 @@ public class MainActivity extends AppCompatActivity {
         }
         showPhoto(mostRecentPhoto);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startLocationUpdates();
+    }
+
+    LocationRequest locationRequest = new LocationRequest();
+
+    private void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            Log.d("permissions disabled","");
+            return;
+        }
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper());
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopLocationUpdates();
+    }
+
+    private void stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback);
+    }
+
 
     public void sendSearch(View view) {
         Intent intent = new Intent(this, SearchActivity.class);
@@ -227,7 +292,12 @@ public class MainActivity extends AppCompatActivity {
                                 Log.d("lastlocfail", "locnull");
                             }
                         }
+                    }).addOnFailureListener(this, new OnFailureListener() {
+                        public void onFailure(Exception e) {
+                            Log.d("fusedfail", e.toString());
+                        }
                     });
+                    ;
 
             photoPaths = getPhotos();
         }
@@ -247,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
             captionText.setText(caption);
             curIndex = photoPaths.indexOf(photoPath);
 
-            Log.d("exifpathsp: ", photoPath);
+            Log.d("exifpathsp", photoPath);
             ExifInterface exif = new ExifInterface(photoPath);
 
             String latS = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
