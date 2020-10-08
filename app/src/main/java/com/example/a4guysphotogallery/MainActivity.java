@@ -1,13 +1,19 @@
 package com.example.a4guysphotogallery;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.location.Location;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,6 +24,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     List<String> photoPaths;
     int curIndex;
 
+    private FusedLocationProviderClient fusedLocationClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,13 +57,15 @@ public class MainActivity extends AppCompatActivity {
         captionText = findViewById(R.id.captionText);
         captionBtn = findViewById(R.id.captionBtn);
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
         Bundle bundle = getIntent().getExtras();
         Long startDate = null;
         Long endDate = null;
         String keyword = null;
 
         if (bundle != null) {
-            Log.d("bundle","bundle not null");
+            Log.d("bundle", "bundle not null");
             startDate = getIntent().getExtras().getLong("EXTRA_START_DATE");
             endDate = getIntent().getExtras().getLong("EXTRA_END_DATE");
             keyword = getIntent().getExtras().getString("EXTRA_KEYWORD");
@@ -69,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         showPhoto(mostRecentPhoto);
     }
 
-    public void sendSearch (View view) {
+    public void sendSearch(View view) {
         Intent intent = new Intent(this, SearchActivity.class);
         startActivity(intent);
     }
@@ -107,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
      * @return the created image File.
      * @throws IOException
      */
+    @SuppressLint("MissingPermission")
     public File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -117,6 +132,19 @@ public class MainActivity extends AppCompatActivity {
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            Log.d("lastloc", location.getLatitude() + ", " + location.getLongitude());
+                        } else {
+                            Log.d("lastlocfail", "locnull");
+                        }
+                    }
+                });
 
         // Save a file: path for use with ACTION_VIEW intents
         mostRecentPhoto = image.getAbsolutePath();
@@ -149,6 +177,14 @@ public class MainActivity extends AppCompatActivity {
             String caption = photoPath.split("_")[2];
             captionText.setText(caption);
             curIndex = photoPaths.indexOf(photoPath);
+
+            ExifInterface exif = new ExifInterface(photoPath);
+
+            String lat = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+
+            String lng = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+
+            Log.d("latlng", "lat: " + lat + ", lng: " + lng);
         } catch (NullPointerException e) {
             Toast.makeText(this,
                     "Image not found: " + e.getMessage(),
@@ -159,6 +195,11 @@ public class MainActivity extends AppCompatActivity {
                     "Image not found: " + e.getMessage(),
                     Toast.LENGTH_LONG).show();
             Log.e(null, e.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this,
+                    "Location not found: " + e.getMessage(),
+                    Toast.LENGTH_LONG).show();
         }
     }
 
