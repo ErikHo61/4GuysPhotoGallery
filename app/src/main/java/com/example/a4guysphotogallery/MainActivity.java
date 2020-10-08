@@ -132,30 +132,6 @@ public class MainActivity extends AppCompatActivity {
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
-        Log.d("exifpath" , image.getAbsolutePath());
-        final ExifInterface exif = new ExifInterface(image);
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            Log.d("lastloc", location.getLatitude() + ", " + location.getLongitude());
-
-                            exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, "" + location.getLatitude());
-
-                            exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, "" + location.getLongitude());
-                            try {
-                                exif.saveAttributes();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                                Log.d("exifsavefail","exif save failed");
-                            }
-                        } else {
-                            Log.d("lastlocfail", "locnull");
-                        }
-                    }
-                });
 
         // Save a file: path for use with ACTION_VIEW intents
         mostRecentPhoto = image.getAbsolutePath();
@@ -163,15 +139,86 @@ public class MainActivity extends AppCompatActivity {
         return image;
     }
 
+    private Double convertToDegree(String input){
+        Log.d("convertToDegree", input);
+        Double result = null;
+        String[] strsplit = input.split(",",3);
+
+        String[] strDegrees = strsplit[0].split("/", 2);
+        Double d0 = Double.parseDouble(strDegrees[0]);
+        Double d1 = Double.parseDouble(strDegrees[1]);
+        Double dResult = d0/d1;
+
+        String[] strMinutes = strsplit[1].split("/", 2);
+        Double m0 = Double.parseDouble(strMinutes[0]);
+        Double m1 = Double.parseDouble(strMinutes[1]);
+        Double mResult = m0/m1;
+
+        String[] strSeconds = strsplit[2].split("/", 2);
+        Double s0 = Double.parseDouble(strSeconds[0]);
+        Double s1 = Double.parseDouble(strSeconds[1]);
+        Double sResult = s0/s1;
+
+        result = dResult + (mResult/60) + (sResult/3600);
+
+        return result;
+    }
+
     /**
      * Get the picture taken by the camera and display it in the
      * ImageView.
      */
+    @SuppressLint("MissingPermission")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             showPhoto(mostRecentPhoto);
+
+            Log.d("exifpathoar" , mostRecentPhoto);
+
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            // Got last known location. In some rare situations this can be null.
+                            if (location != null) {
+                                Log.d("lastloc", location.getLatitude() + ", " + location.getLongitude());
+                                final ExifInterface exif;
+                                try {
+                                    exif = new ExifInterface(mostRecentPhoto);
+                                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, Double.toString(location.getLatitude()));
+
+                                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, Double.toString(location.getLongitude()));
+
+                                    try {
+                                        exif.saveAttributes();
+                                        Log.d("exifsaved","exif saved");
+                                        String lat = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+
+                                        String lng = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+
+                                        Log.d("exiftest", "lat: " + lat + ", lng: " + lng);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                        Log.d("exifsavefail","exif save failed");
+                                        String lat = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+
+                                        String lng = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+
+                                        Log.d("exiftest", "lat: " + lat + ", lng: " + lng);
+                                    }
+
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                            } else {
+                                Log.d("lastlocfail", "locnull");
+                            }
+                        }
+                    });
+
             photoPaths = getPhotos();
         }
     }
@@ -190,12 +237,15 @@ public class MainActivity extends AppCompatActivity {
             captionText.setText(caption);
             curIndex = photoPaths.indexOf(photoPath);
 
-            Log.d("exifpath: ", photoPath);
+            Log.d("exifpathsp: ", photoPath);
             ExifInterface exif = new ExifInterface(photoPath);
 
-            String lat = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
+            String latS = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
 
-            String lng = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+            String lngS = exif.getAttribute(ExifInterface.TAG_GPS_LONGITUDE);
+
+            Double lat = convertToDegree(latS);
+            Double lng = convertToDegree(lngS);
 
             Log.d("latlng", "lat: " + lat + ", lng: " + lng);
         } catch (NullPointerException e) {
