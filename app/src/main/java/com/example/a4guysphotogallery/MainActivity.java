@@ -95,16 +95,20 @@ public class MainActivity extends AppCompatActivity {
         Long startDate = null;
         Long endDate = null;
         String keyword = null;
+        Double lat = null;
+        Double lng = null;
 
         if (bundle != null) {
             Log.d("bundle", "bundle not null");
             startDate = getIntent().getExtras().getLong("EXTRA_START_DATE");
             endDate = getIntent().getExtras().getLong("EXTRA_END_DATE");
             keyword = getIntent().getExtras().getString("EXTRA_KEYWORD");
+            lat = getIntent().getExtras().getDouble("EXTRA_LAT");
+            lng = getIntent().getExtras().getDouble("EXTRA_LNG");
         }
 
 
-        photoPaths = getPhotos(startDate, endDate, keyword);
+        photoPaths = getPhotos(startDate, endDate, lat, lng, keyword);
         if (photoPaths.size() > 0) {
             curIndex = photoPaths.size() - 1;
             mostRecentPhoto = photoPaths.get(curIndex);
@@ -352,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
      * @param endDate, the startDate that we are searching for
      * @param keyword, the keyword that we are searching for
      */
-    private List<String> getPhotos(Long startDate, Long endDate, String keyword) {
+    private List<String> getPhotos(Long startDate, Long endDate, Double lat, Double lng, String keyword) {
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         ArrayList<String> photoPaths = new ArrayList<>();
         if (storageDir != null ) {
@@ -377,7 +381,6 @@ public class MainActivity extends AppCompatActivity {
                     // filter the params
                     boolean containKeyword = keyword != null && path.contains(keyword);
 
-
                     String[] args = photo.getName().split("_");
                     for (String s:
                          args) {
@@ -385,10 +388,20 @@ public class MainActivity extends AppCompatActivity {
                     }
                     boolean validLastModified = startDate != null && endDate != null
                             && startDate < Long.parseLong(args[0]) && endDate < Long.parseLong(args[0]);
+                    boolean validLoc = true;
+                    try {
+                        ExifInterface exifInterface = new ExifInterface(photo);
+                        validLoc = convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) < lat + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) > lat - 0.1;
+                        validLoc = validLoc && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) < lng + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) > lng - 0.1;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
 
                     Log.d(null, "containkeyword" + containKeyword);
                     Log.d(null, "validLastModified" + validLastModified);
-                    if (containKeyword && validLastModified){
+                    Log.d(null, "validLoc" + validLoc);
+                    if (containKeyword && validLastModified && validLoc){
                         photoPaths.add(path);
                     }
                 }
@@ -404,7 +417,7 @@ public class MainActivity extends AppCompatActivity {
      * Get all the photos from our storage.
      */
     private List<String> getPhotos() {
-        return getPhotos(null, null, null);
+        return getPhotos(null, null, null, null, null);
     }
 
     public void captionBtnClick(View view){
