@@ -39,12 +39,19 @@ public class SearchActivity extends AppCompatActivity {
         EditText keywordInput = (EditText) findViewById(R.id.keySchText);
         String keyword = keywordInput.getText().toString();
 
+        EditText latInput = (EditText) findViewById(R.id.latText);
+        EditText lngInput = (EditText) findViewById(R.id.lngText);
+        String lat = latInput.getText().toString();
+        String lng = lngInput.getText().toString();
+
         Bundle extras = new Bundle();
         if(startDate!= null)
             extras.putLong("EXTRA_START_DATE", startDate);
         if(endDate!= null)
             extras.putLong("EXTRA_END_DATE", endDate);
         extras.putString("EXTRA_KEYWORD", keyword);
+        extras.putDouble("EXTRA_LAT", Double.parseDouble(lat));
+        extras.putDouble("EXTRA_LNG", Double.parseDouble(lng));
         intent.putExtras(extras);
         startActivity(intent);
     }
