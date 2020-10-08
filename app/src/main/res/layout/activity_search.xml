@@ -7,6 +7,19 @@
     android:background="@android:color/holo_orange_light"
     tools:context=".SearchActivity">
 
+    <EditText
+        android:id="@+id/lngText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="32dp"
+        android:ems="10"
+        android:hint="Longitude"
+        android:inputType="number"
+        android:maxLength="6"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/latText" />
+
     <TextView
         android:id="@+id/endText"
         android:layout_width="wrap_content"
@@ -51,7 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="64dp"
         android:ems="10"
         android:hint="Keywords"
         android:inputType="textPersonName"
@@ -62,12 +75,12 @@
         android:id="@+id/keySchBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="292dp"
+        android:layout_marginTop="408dp"
         android:onClick="search"
         android:text="Search"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.494"
-        app:layout_constraintStart_toEndOf="@+id/keySchText"
+        app:layout_constraintStart_toEndOf="@+id/lngText"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
@@ -96,5 +109,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Start Date" />
+
+    <EditText
+        android:id="@+id/latText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="32dp"
+        android:ems="10"
+        android:hint="Latitude"
+        android:inputType="number"
+        android:maxLength="6"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/keySchText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
