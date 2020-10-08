@@ -133,19 +133,6 @@ public class MainActivity extends AppCompatActivity {
                 storageDir      /* directory */
         );
 
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            Log.d("lastloc", location.getLatitude() + ", " + location.getLongitude());
-                        } else {
-                            Log.d("lastlocfail", "locnull");
-                        }
-                    }
-                });
-
         // Save a file: path for use with ACTION_VIEW intents
         mostRecentPhoto = image.getAbsolutePath();
         Log.d("filepath", image.getPath());
@@ -169,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
      * Display the photo at photoPath in the ImageView.
      * @param photoPath, the file path to the photo
      */
+    @SuppressLint("MissingPermission")
     private void showPhoto(String photoPath) {
         try {
             photoPaths = getPhotos();
@@ -177,6 +165,19 @@ public class MainActivity extends AppCompatActivity {
             String caption = photoPath.split("_")[2];
             captionText.setText(caption);
             curIndex = photoPaths.indexOf(photoPath);
+
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            // Got last known location. In some rare situations this can be null.
+                            if (location != null) {
+                                Log.d("lastloc", location.getLatitude() + ", " + location.getLongitude());
+                            } else {
+                                Log.d("lastlocfail", "locnull");
+                            }
+                        }
+                    });
 
             ExifInterface exif = new ExifInterface(photoPath);
 
