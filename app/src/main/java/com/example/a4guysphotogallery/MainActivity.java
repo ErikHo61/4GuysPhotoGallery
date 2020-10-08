@@ -132,6 +132,30 @@ public class MainActivity extends AppCompatActivity {
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
+        Log.d("exifpath" , image.getAbsolutePath());
+        final ExifInterface exif = new ExifInterface(image);
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            Log.d("lastloc", location.getLatitude() + ", " + location.getLongitude());
+
+                            exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, "" + location.getLatitude());
+
+                            exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, "" + location.getLongitude());
+                            try {
+                                exif.saveAttributes();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                Log.d("exifsavefail","exif save failed");
+                            }
+                        } else {
+                            Log.d("lastlocfail", "locnull");
+                        }
+                    }
+                });
 
         // Save a file: path for use with ACTION_VIEW intents
         mostRecentPhoto = image.getAbsolutePath();
@@ -166,19 +190,7 @@ public class MainActivity extends AppCompatActivity {
             captionText.setText(caption);
             curIndex = photoPaths.indexOf(photoPath);
 
-            fusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            // Got last known location. In some rare situations this can be null.
-                            if (location != null) {
-                                Log.d("lastloc", location.getLatitude() + ", " + location.getLongitude());
-                            } else {
-                                Log.d("lastlocfail", "locnull");
-                            }
-                        }
-                    });
-
+            Log.d("exifpath: ", photoPath);
             ExifInterface exif = new ExifInterface(photoPath);
 
             String lat = exif.getAttribute(ExifInterface.TAG_GPS_LATITUDE);
