@@ -317,12 +317,15 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("MissingPermission")
     private void showPhoto(String photoPath) {
         try {
+            Log.d("showphoto",photoPath);
             photoPaths = getPhotos();
             Bitmap imageBitmap = BitmapFactory.decodeFile(photoPath);
             imageView.setImageBitmap(imageBitmap);
             String caption = photoPath.split("_")[2];
             captionText.setText(caption);
             curIndex = photoPaths.indexOf(photoPath);
+
+            Log.d("curindex",""+curIndex);
 
             Log.d("exifpathsp", photoPath);
             ExifInterface exif = new ExifInterface(photoPath);
@@ -371,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
                     if (!path.contains(".jpg")) continue;
 
                     // no filters
-                    if (keyword == null && (startDate == null || endDate == null)) {
+                    if (keyword == null && (startDate == null || endDate == null) && lat == null && lng == null) {
                         photoPaths.add(path);
                         continue;
                     }
@@ -392,13 +395,21 @@ public class MainActivity extends AppCompatActivity {
                     boolean validLastModified = startDate != null && endDate != null
                             && startDate < Long.parseLong(args[0]) && endDate < Long.parseLong(args[0]);
                     boolean validLoc = true;
-                    try {
-                        ExifInterface exifInterface = new ExifInterface(photo);
-                        validLoc = convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) < lat + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) > lat - 0.1;
-                        validLoc = validLoc && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) < lng + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) > lng - 0.1;
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    if(lat != 0.0 || lng != 0.0){
+                        try {
+                            ExifInterface exifInterface = new ExifInterface(photo);
+                            if(lat!=0.0){
+                                validLoc = convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) < lat + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) > lat - 0.1;
+                            }
+                            if(lng!=0.0){
+                                validLoc = validLoc && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) < lng + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) > lng - 0.1;
+                            }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
+
 
 
                     Log.d(null, "containkeyword" + containKeyword);

@@ -50,11 +50,13 @@ public class SearchActivity extends AppCompatActivity {
         if(endDate!= null)
             extras.putLong("EXTRA_END_DATE", endDate);
         extras.putString("EXTRA_KEYWORD", keyword);
-        if(lat.trim() != null){
+
+        if(!lat.trim().equals("")){
+            Log.d("latsearch", "|"+ lat.trim() + "|");
             extras.putDouble("EXTRA_LAT", Double.parseDouble(lat));
         }
         //extras.putDouble("EXTRA_LAT", Double.parseDouble(lat));
-        if(lng.trim() != null){
+        if(!lng.trim().equals("")){
             extras.putDouble("EXTRA_LNG", Double.parseDouble(lng));
         }
         //extras.putDouble("EXTRA_LNG", Double.parseDouble(lng));
