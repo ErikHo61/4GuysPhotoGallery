@@ -16,6 +16,7 @@
         android:ems="10"
         android:hint="Longitude"
         android:inputType="number"
+        android:maxLength="6"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/latText" />
 
@@ -118,6 +119,7 @@
         android:ems="10"
         android:hint="Latitude"
         android:inputType="number"
+        android:maxLength="6"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/keySchText" />
 
