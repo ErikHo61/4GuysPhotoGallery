@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
         captionText = findViewById(R.id.captionText);
         captionBtn = findViewById(R.id.captionBtn);
 
-        interactor = new MainActivityInteractor(this, mostRecentPhoto);
+        interactor = new MainActivityInteractor(this);
         presenter = new MainActivityPresenter(interactor);
         presenter.bind(this);
 
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
 
             Log.d("exifpathoar" , mostRecentPhoto);
 
-            interactor.picture(this);
+            interactor.picture(this, mostRecentPhoto);
             photoPaths = getPhotos();
         }
     }

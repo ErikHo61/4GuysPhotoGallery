@@ -30,7 +30,7 @@ public class MainActivityInteractor {
     String Photo;
 
     @SuppressLint("MissingPermission")
-    public MainActivityInteractor(Activity act, String photo) {
+    public MainActivityInteractor(Activity act) {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(act);
         fusedLocationClient.getLocationAvailability()
                 .addOnSuccessListener(act, new OnSuccessListener<LocationAvailability>() {
@@ -51,9 +51,6 @@ public class MainActivityInteractor {
                 }
             }
         };
-
-        Photo = photo;
-
     }
 
     protected void onResume(Activity act) {
@@ -86,7 +83,7 @@ public class MainActivityInteractor {
     }
 
     @SuppressLint("MissingPermission")
-    public void picture(Activity act) {
+    public void picture(Activity act, final String photoName) {
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(act, new OnSuccessListener<Location>() {
                     @Override
@@ -97,7 +94,7 @@ public class MainActivityInteractor {
 
                             ExifInterface exif;
                             try {
-                                exif = new ExifInterface(Photo);
+                                exif = new ExifInterface(photoName);
                                 Log.d("exif status", exif.TAG_FILE_SOURCE);
                                 exif.setGpsInfo(location);
                                 try {
