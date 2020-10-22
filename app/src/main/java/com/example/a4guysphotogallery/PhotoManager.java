@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Handles everything related to retrieving photos from storage.
@@ -77,49 +78,58 @@ public class PhotoManager {
         if (storageDir != null) {
             File[] files = storageDir.listFiles();
             if (files != null) {
-                Arrays.sort(files);
-                boolean noFilter = keyword == null && (startDate == null || endDate == null) && lat == null && lng == null;
-                for (File file : files) {
-                    String path = file.getPath();
-                    if (!path.contains(".jpg")) continue;
+                //Arrays.sort(files);
+                //boolean noFilter = keyword == null && (startDate == null || endDate == null) && lat == null && lng == null;
+                Stream<File> fileStream = Arrays.stream(files).sorted();
+                Stream<File> filteredStream = fileStream.filter(p -> filterPhotos(p, startDate, endDate, lat, lng, keyword));
+                filteredStream.forEach(s -> photoPaths.add(s.getPath()));
 
-                    // no filters
-                    if (noFilter) {
-                        photoPaths.add(path);
-                        continue;
-                    }
+//                for (File file : files) {
+//                    String path = file.getPath();
+//                    if (!path.contains(".jpg")) continue;
+//
+//                    // no filters
+//                    if (noFilter) {
+//                        photoPaths.add(path);
+//                        continue;
+//                    }
+//
+//                    // check for three cases:
+//                    // keyword has filter but no date filter
+//                    // date has filter but no keyword
+//                    // both filters are on
+//
+//                    // filter the params
+//                    boolean containKeyword = keyword != null && path.contains(keyword);
+//
+//                    String[] args = file.getName().split("_");
+//
+//                    boolean validLastModified = startDate != null && endDate != null
+//                            && startDate < Long.parseLong(args[0]) && endDate < Long.parseLong(args[0]);
+//                    boolean validLoc = true;
+//                    if (lat != 0.0 || lng != 0.0){
+//                        try {
+//                            ExifInterface exifInterface = new ExifInterface(file);
+//                            if (lat != 0.0) {
+//                                validLoc = convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) < lat + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) > lat - 0.1;
+//                            }
+//                            if (lng != 0.0){
+//                                validLoc = validLoc && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) < lng + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) > lng - 0.1;
+//                            }
+//
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//
+//                    Log.d(null, "containkeyword" + containKeyword);
+//                    Log.d(null, "validLastModified" + validLastModified);
+//                    Log.d(null, "validLoc" + validLoc);
+//                    if (containKeyword && validLastModified && validLoc){
+//                        photoPaths.add(path);
+//                    }
+//                }
 
-                    // check for three cases:
-                    // keyword has filter but no date filter
-                    // date has filter but no keyword
-                    // both filters are on
-
-                    // filter the params
-                    boolean containKeyword = keyword != null && path.contains(keyword);
-
-                    String[] args = file.getName().split("_");
-                    boolean validLastModified = startDate != null && endDate != null
-                            && startDate < Long.parseLong(args[0]) && endDate < Long.parseLong(args[0]);
-                    boolean validLoc = true;
-                    if (lat != 0.0 || lng != 0.0){
-                        try {
-                            ExifInterface exifInterface = new ExifInterface(file);
-                            if (lat != 0.0) {
-                                validLoc = convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) < lat + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) > lat - 0.1;
-                            }
-                            if (lng != 0.0){
-                                validLoc = validLoc && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) < lng + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) > lng - 0.1;
-                            }
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    if (containKeyword && validLastModified && validLoc){
-                        photoPaths.add(path);
-                    }
-                }
             }
         }
 
@@ -127,6 +137,54 @@ public class PhotoManager {
                 photoPaths.size() + " photos loaded",
                 Toast.LENGTH_SHORT).show();
         return photoPaths;
+    }
+    /**
+     * Filter the files
+     * @param file, the file being filtered
+     * @param startDate, the startDate that we are searching for
+     * @param endDate, the startDate that we are searching for
+     * @param lat, the latitude.
+     * @param lng, the longitude.
+     * @param keyword, the keyword that we are searching for
+     */
+    private Boolean filterPhotos(File file, Long startDate, Long endDate, Double lat, Double lng, String keyword ){
+        String path = file.getPath();
+        if (!path.contains(".jpg")) return false;
+        boolean noFilter = keyword == null && (startDate == null || endDate == null) && lat == null && lng == null;
+        // no filters
+        if (noFilter) return true;
+        // check for three cases:
+        // keyword has filter but no date filter
+        // date has filter but no keyword
+        // both filters are on
+        // filter the params
+        boolean containKeyword = keyword != null && path.contains(keyword);
+        String[] args = file.getName().split("_");
+        boolean validLastModified = startDate != null && endDate != null
+                && startDate < Long.parseLong(args[0]) && endDate < Long.parseLong(args[0]);
+        boolean validLoc = true;
+        if (lat != 0.0 || lng != 0.0){
+            try {
+                ExifInterface exifInterface = new ExifInterface(file);
+                if (lat != 0.0) {
+                    validLoc = convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) < lat + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) > lat - 0.1;
+                }
+                if (lng != 0.0){
+                    validLoc = validLoc && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) < lng + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) > lng - 0.1;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        Log.d(null, "containkeyword" + containKeyword);
+        Log.d(null, "validLastModified" + validLastModified);
+        Log.d(null, "validLoc" + validLoc);
+        if (containKeyword && validLastModified && validLoc){
+            return true;
+        }
+        return false;
     }
 
 
