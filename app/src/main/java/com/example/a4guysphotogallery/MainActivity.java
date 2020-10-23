@@ -224,8 +224,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
                     Toast.LENGTH_SHORT).show();
             return;
         }
-        String photoPath = photoPaths.get(--curIndex);
-        showPhoto(photoPath);
+        mostRecentPhoto = photoPaths.get(--curIndex);
+        showPhoto(mostRecentPhoto);
     }
 
     /**
@@ -240,8 +240,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
                     Toast.LENGTH_SHORT).show();
             return;
         }
-        String photoPath = photoPaths.get(++curIndex);
-        showPhoto(photoPath);
+        mostRecentPhoto = photoPaths.get(++curIndex);
+        showPhoto(mostRecentPhoto);
     }
 
     /**
