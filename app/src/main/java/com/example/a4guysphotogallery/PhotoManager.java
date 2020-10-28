@@ -16,35 +16,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Handles everything related to retrieving photos from storage.
  */
-public class PhotoManager extends AppCompatActivity {
-    String mostRecentPhoto;
-    List<String> photoPaths;
-    int curIndex;
-    private Context mainActivityContext;
-
+public class PhotoManager {
     // keep track of the singleton
     private static PhotoManager manager;
 
     /**
      * Don't use this, only use for the Android Manifest.
      */
-    public PhotoManager(Context mainActivityContext) {
-        super();
-        this.mainActivityContext = mainActivityContext;
-        photoPaths = getPhotos();
-    }
+    private PhotoManager() { }
 
     /**
      * Get the PhotoManager instance.
      * @return the PhotoManager.
      */
-    public static PhotoManager getManager(Context mainActivityContext) {
+    public static PhotoManager getManager() {
         if (manager == null) {
-            manager = new PhotoManager(mainActivityContext);
+            manager = new PhotoManager();
         }
         return manager;
     }
@@ -56,105 +48,103 @@ public class PhotoManager extends AppCompatActivity {
      * @throws IOException
      */
     @SuppressLint("MissingPermission")
-    public File createImageFile() throws IOException {
+    public File createImageFile(Context packageContext) throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = timeStamp + "_Default Caption_";
-        File storageDir = mainActivityContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File emptyImage = File.createTempFile(
+        File storageDir = packageContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        // Save a file: path for use with ACTION_VIEW intents
+        return File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        mostRecentPhoto = emptyImage.getAbsolutePath();
-        return emptyImage;
     }
 
     /**
-     * Get all the photos from our storage.
+     * Get all the photos from our storage and put it in photoPaths.
+     * @param startDate, the startDate that we are searching for
+     * @param endDate, the startDate that we are searching for
+     * @param lat, the latitude.
+     * @param lng, the longitude.
+     * @param keyword, the keyword that we are searching for
+     * @param packageContext, the context of the package that calls this manager.
+     */
+    public List<String> getPhotos(Long startDate, Long endDate, Double lat, Double lng, String keyword,
+                                  Context packageContext) {
+        File storageDir = packageContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        List<String> photoPaths = new ArrayList<>();
+
+        if (storageDir != null) {
+            File[] files = storageDir.listFiles();
+            if (files != null) {
+                Stream<File> fileStream = Arrays.stream(files).sorted();
+                Stream<File> filteredStream = fileStream.filter(p -> filterPhotos(p, startDate, endDate, lat, lng, keyword));
+                filteredStream.forEach(s -> photoPaths.add(s.getPath()));
+            }
+        }
+
+        Toast.makeText(packageContext,
+                photoPaths.size() + " photos loaded",
+                Toast.LENGTH_SHORT).show();
+        return photoPaths;
+    }
+    /**
+     * Filter the files
+     * @param file, the file being filtered
      * @param startDate, the startDate that we are searching for
      * @param endDate, the startDate that we are searching for
      * @param lat, the latitude.
      * @param lng, the longitude.
      * @param keyword, the keyword that we are searching for
      */
-    public List<String> getPhotos(Long startDate, Long endDate, Double lat, Double lng, String keyword) {
-        File storageDir = mainActivityContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        ArrayList<String> photoPaths = new ArrayList<>();
-
-        if (storageDir != null) {
-            File[] files = storageDir.listFiles();
-            if (files != null) {
-                Arrays.sort(files);
-                boolean noFilter = keyword == null && (startDate == null || endDate == null) && lat == null && lng == null;
-                for (File file : files) {
-                    String path = file.getPath();
-                    if (!path.contains(".jpg")) continue;
-
-                    // no filters
-                    if (noFilter) {
-                        photoPaths.add(path);
-                        continue;
-                    }
-
-                    // check for three cases:
-                    // keyword has filter but no date filter
-                    // date has filter but no keyword
-                    // both filters are on
-
-                    // filter the params
-                    boolean containKeyword = keyword != null && path.contains(keyword);
-
-                    String[] args = file.getName().split("_");
-                    boolean validLastModified = startDate != null && endDate != null
-                            && startDate < Long.parseLong(args[0]) && endDate < Long.parseLong(args[0]);
-                    boolean validLoc = true;
-                    if (lat != 0.0 || lng != 0.0){
-                        try {
-                            ExifInterface exifInterface = new ExifInterface(file);
-                            if (lat != 0.0) {
-                                validLoc = convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) < lat + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) > lat - 0.1;
-                            }
-                            if (lng != 0.0){
-                                validLoc = validLoc && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) < lng + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) > lng - 0.1;
-                            }
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    Log.d(null, "containkeyword" + containKeyword);
-                    Log.d(null, "validLastModified" + validLastModified);
-                    Log.d(null, "validLoc" + validLoc);
-                    if (containKeyword && validLastModified && validLoc){
-                        photoPaths.add(path);
-                    }
+    private Boolean filterPhotos(File file, Long startDate, Long endDate, Double lat, Double lng, String keyword ){
+        String path = file.getPath();
+        if (!path.contains(".jpg")) return false;
+        boolean noFilter = keyword == null && (startDate == null || endDate == null) && lat == null && lng == null;
+        // no filters
+        if (noFilter) return true;
+        // check for three cases:
+        // keyword has filter but no date filter
+        // date has filter but no keyword
+        // both filters are on
+        // filter the params
+        boolean containKeyword = keyword != null && path.contains(keyword);
+        String[] args = file.getName().split("_");
+        boolean validLastModified = startDate != null && endDate != null
+                && startDate < Long.parseLong(args[0]) && endDate < Long.parseLong(args[0]);
+        boolean validLoc = true;
+        if (lat != 0.0 || lng != 0.0){
+            try {
+                ExifInterface exifInterface = new ExifInterface(file);
+                if (lat != 0.0) {
+                    validLoc = convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) < lat + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LATITUDE)) > lat - 0.1;
                 }
+                if (lng != 0.0){
+                    validLoc = validLoc && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) < lng + 0.1 && convertToDegree(exifInterface.getAttribute(ExifInterface.TAG_GPS_LONGITUDE)) > lng - 0.1;
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
 
-        Toast.makeText(mainActivityContext,
-                photoPaths.size() + " photos loaded",
-                Toast.LENGTH_SHORT).show();
-        return photoPaths;
+        Log.d(null, "containkeyword" + containKeyword);
+        Log.d(null, "validLastModified" + validLastModified);
+        Log.d(null, "validLoc" + validLoc);
+        if (containKeyword && validLastModified && validLoc){
+            return true;
+        }
+        return false;
     }
 
-    /**
-     * Get all the photos from our storage.
-     */
-    public List<String> getPhotos() {
-        return getPhotos(null, null, null, null, null);
-    }
 
     /**
      * Convert the input into geographical degrees
      * @param input
      * @return
      */
-    private Double convertToDegree(String input){
+    public static Double convertToDegree(String input){
         String[] strsplit = input.split(",",3);
 
         String[] strDegrees = strsplit[0].split("/", 2);
@@ -175,33 +165,4 @@ public class PhotoManager extends AppCompatActivity {
         return dResult + (mResult/60) + (sResult/3600);
     }
 
-    /**
-     * Get the previous photo from our storage.
-     * @return the path to the previous photo
-     */
-    public String getPreviousPhoto() {
-        // if there's no previous picture
-        if (curIndex <= 0) {
-            Toast.makeText(mainActivityContext,
-                    "No more pictures",
-                    Toast.LENGTH_SHORT).show();
-            return mostRecentPhoto;
-        }
-        return photoPaths.get(--curIndex);
-    }
-
-    /**
-     * Get the next photo from our storage.
-     * @return the path to the next photo
-     */
-    public String getNextPhoto() {
-        // if there's no next picture
-        if (curIndex >= photoPaths.size() - 1) {
-            Toast.makeText(mainActivityContext,
-                    "No more pictures",
-                    Toast.LENGTH_SHORT).show();
-            return mostRecentPhoto;
-        }
-        return photoPaths.get(++curIndex);
-    }
 }

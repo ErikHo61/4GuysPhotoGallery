@@ -89,11 +89,10 @@
         android:layout_width="125dp"
         android:layout_height="36dp"
         android:gravity="center"
-        android:text="Date"
         app:layout_constraintBottom_toTopOf="@+id/captionText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+        app:layout_constraintStart_toStartOf="@+id/imageView"
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        app:layout_constraintVertical_bias="0.55" />
 
     <Button
         android:id="@+id/captionBtn"
@@ -121,5 +120,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/captionText"
         app:layout_constraintVertical_bias="0.725" />
+
+    <TextView
+        android:id="@+id/lngView"
+        android:layout_width="75dp"
+        android:layout_height="wrap_content"
+        android:maxLength="7"
+        android:text="Long"
+        app:layout_constraintBottom_toTopOf="@+id/captionText"
+        app:layout_constraintEnd_toEndOf="@+id/imageView"
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+
+    <TextView
+        android:id="@+id/latView"
+        android:layout_width="75dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="15dp"
+        android:maxLength="7"
+        android:text="Lat"
+        app:layout_constraintBottom_toTopOf="@+id/captionText"
+        app:layout_constraintEnd_toStartOf="@+id/lngView"
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
