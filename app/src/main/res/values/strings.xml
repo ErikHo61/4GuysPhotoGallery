@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">4GuysPhotoGallery</string>
     <string name="dateTextHint">DD/MM/YYYY</string>
+    <string name="imageView">Image View</string>
+    <string name="caption">Caption</string>
+    <string name="lng">Longitude</string>
+    <string name="lat">Latitude</string>
+    <string name="key">Keywords</string>
+
 </resources>
